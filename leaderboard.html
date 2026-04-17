@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard - The Tour 2026</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body onload="renderLeaderboard()">
+
+  <!-- HEADER (consistent across all pages) -->
+  <header>
+    <h2>Mini Golf Tour</h2>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="players.html">Players</a>
+      <a href="stats.html">Stats</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <div class="card">
+    <h1>Season Leaderboard</h1>
+    <p>Rankings are based on tournament finishing points.</p>
+  </div>
+
+  <!-- LEADERBOARD CONTAINER -->
+  <div id="leaderboardList"></div>
+
+  <!-- SCRIPT -->
+  <script src="script.js"></script>
+
+</body>
+</html>
