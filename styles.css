@@ -142,20 +142,20 @@ input {
   margin-top: 20px;
 }
 
+.image-slot {
+  height: 140px;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden; /* THIS fixes overflow */
+  position: relative;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #14532d;
+}
+
+/* IMAGE FIT FIX */
 .image-slot img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-.image-slot {
-  height: 140px;
-  background: rgba(255,255,255,0.08);
-  border: 2px dashed #22c55e;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #a7f3d0;
+  object-fit: cover; /* KEY LINE */
+  display: block;
 }
