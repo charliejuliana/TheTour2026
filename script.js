@@ -4,7 +4,8 @@ let players = JSON.parse(localStorage.getItem('mg_players')) || [
 {name:"Devin Skinner", points:0, img:"SkinnerProfile.png"},
 {name:"Isaac Baranski", points:0, img:"tuffAhhIsaac.png"},
 {name:"Peter Merk", points:0, img:"PeterProfile.png"},
-{name:"Avery Radom", points:0, img:"averyiszesty-1.png"}
+{name:"Avery Radom", points:0, img:"averyiszesty-1.png"},
+{name:"Ryan Wright", points:0, img:"default.png"}
 ];
 
 let tournaments = JSON.parse(localStorage.getItem('mg_tournaments')) || [];
@@ -67,7 +68,7 @@ function renderLeaderboard(){
         align-items:center;
         justify-content:space-between;
         border: ${isLeader ? "2px solid gold" : "1px solid #1f2937"};
-        background: ${isLeader ? "rgba(234,179,8,0.10)" : "rgba(30,41,59,0.9)"};
+        background: ${isLeader ? "rgba(234,179,8,0.10)" : "rgba(5, 46, 22, 0.85)"};
         box-shadow: ${isLeader ? "0 0 18px rgba(234,179,8,0.35)" : "none"};
       ">
 
