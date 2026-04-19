@@ -147,6 +147,7 @@ input {
   overflow: hidden;
   border: 1px solid #14532d;
   background: #022c22;
+  aspect-ratio: 4 / 3;
 }
 
 /* IMAGE AUTO SIZE */
