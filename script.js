@@ -192,38 +192,44 @@ function initScores(){
 function addTournament(){
   let results = [];
 
+  // collect scores (only players who played)
   players.forEach(p=>{
     let val = document.getElementById(`score-${p.name}`).value;
     if(val !== "") results.push({name:p.name, score:parseInt(val)});
   });
 
+  // sort by score (lower is better)
   results.sort((a,b)=>a.score-b.score);
 
   let places = [];
   let place = 1;
 
+  // assign places WITH ties
   for(let i=0;i<results.length;i++){
     if(i>0 && results[i].score === results[i-1].score){
-      places[i] = places[i-1];
+      places[i] = places[i-1]; // same place for tie
     } else {
       places[i] = place;
     }
     place++;
   }
 
-  function getPoints(p){
-    if(p===1) return 4;
-    if(p===2) return 3;
-    if(p===3) return 2;
-    if(p===4) return 1;
-    return 0;
+  // TOTAL PLAYERS WHO PLAYED
+  let totalPlayers = results.length;
+
+  // dynamic scoring function
+  function getPoints(place){
+    return totalPlayers - place + 1;
   }
 
+  // assign points
   results.forEach((r,i)=>{
+    let pts = getPoints(places[i]);
     let player = players.find(x=>x.name===r.name);
-    player.points += getPoints(places[i]);
+    player.points += pts;
   });
 
+  // save tournament
   tournaments.push({
     name: document.getElementById("name").value,
     date: document.getElementById("date").value,
