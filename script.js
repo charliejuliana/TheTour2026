@@ -241,3 +241,60 @@ function addTournament(){
   saveData();
   alert("Tournament Added");
 }
+
+function resetLeaderboard(){
+  let confirmReset = confirm("Are you sure you want to reset all leaderboard points?");
+  
+  if(!confirmReset) return;
+
+  // reset all player points
+  players.forEach(p => p.points = 0);
+
+  // clear ranking history (movement arrows)
+  localStorage.removeItem('mg_last_rankings');
+
+  saveData();
+
+  alert("Leaderboard has been reset.");
+
+  // refresh leaderboard if on page
+  renderLeaderboard();
+}
+
+function undoLastTournament(){
+  if(tournaments.length === 0){
+    alert("No tournaments to undo.");
+    return;
+  }
+
+  let confirmUndo = confirm("Undo the last tournament?");
+  if(!confirmUndo) return;
+
+  // get last tournament
+  let last = tournaments[tournaments.length - 1];
+
+  // subtract points that were awarded
+  last.results.forEach(r => {
+    let player = players.find(p => p.name === r.name);
+
+    // same scoring logic used before
+    let totalPlayers = last.results.length;
+    let pts = totalPlayers - r.place + 1;
+
+    player.points -= pts;
+  });
+
+  // remove tournament
+  tournaments.pop();
+
+  // reset movement tracking so arrows don’t bug out
+  localStorage.removeItem('mg_last_rankings');
+
+  saveData();
+
+  alert("Last tournament undone.");
+
+  // refresh UI if needed
+  renderLeaderboard();
+  renderTournaments();
+}
