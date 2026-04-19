@@ -5,7 +5,7 @@ let players = JSON.parse(localStorage.getItem('mg_players')) || [
 {name:"Isaac Baranski", points:0, img:"tuffAhhIsaac.png"},
 {name:"Peter Merk", points:0, img:"PeterProfile.png"},
 {name:"Avery Radom", points:0, img:"averyiszesty-1.png"},
-{name:"Ryan Wright", points:0, img:"default.png"}
+{name:"Ryan Wright", points:0, img:"BigBoyRyan.png"}
 ];
 
 let tournaments = JSON.parse(localStorage.getItem('mg_tournaments')) || [];
