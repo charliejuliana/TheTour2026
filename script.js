@@ -6,15 +6,14 @@ const auth = getAuth(app);
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// 🔑 PASTE YOUR FIREBASE CONFIG HERE
 const firebaseConfig = {
-  apiKey: "PASTE_HERE",
-  authDomain: "PASTE_HERE",
-  databaseURL: "PASTE_HERE",
-  projectId: "PASTE_HERE",
-  storageBucket: "PASTE_HERE",
-  messagingSenderId: "PASTE_HERE",
-  appId: "PASTE_HERE"
+  apiKey: "AIzaSyCpIeFrOBGqV3TNpw1ZcfAWpEgWA54dw_Y",
+  authDomain: "thetour2026-de5dc.firebaseapp.com",
+  projectId: "thetour2026-de5dc",
+  storageBucket: "thetour2026-de5dc.firebasestorage.app",
+  messagingSenderId: "764867779689",
+  appId: "1:764867779689:web:510000e0b513936c8ed6f8",
+  measurementId: "G-LE33C8GPW0"
 };
 
 // INIT FIREBASE
