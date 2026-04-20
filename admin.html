@@ -12,9 +12,8 @@
 </header>
 
 <div class="card">
-<input id="email" placeholder="Email">
-<input type="password" id="password" placeholder="Password">
-<button onclick="login()">Login</button>
+<input type="password" id="password" placeholder="Enter password">
+<button onclick="unlock()">Unlock</button>
 
 <div id="adminPanel" style="display:none;">
 <h2>Add Tournament</h2>
@@ -25,6 +24,10 @@
 
 <h3>Scores</h3>
 <div id="scores"></div>
+
+<button onclick="addTournament()">Submit</button>
+</div>
+</div>
 
   <hr>
 <h3>Reset Leaderboard</h3>
@@ -38,10 +41,6 @@
   Undo Last Tournament
 </button>
 
-<button onclick="addTournament()">Submit</button>
-</div>
-</div>
-
-<script type="module" src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
