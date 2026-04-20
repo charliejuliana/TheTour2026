@@ -1,27 +1,4 @@
-import { getAuth, signInWithEmailAndPassword } 
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-const auth = getAuth(app);
-
-// 🔥 FIREBASE IMPORTS
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCpIeFrOBGqV3TNpw1ZcfAWpEgWA54dw_Y",
-  authDomain: "thetour2026-de5dc.firebaseapp.com",
-  projectId: "thetour2026-de5dc",
-  storageBucket: "thetour2026-de5dc.firebasestorage.app",
-  messagingSenderId: "764867779689",
-  appId: "1:764867779689:web:510000e0b513936c8ed6f8",
-  measurementId: "G-LE33C8GPW0"
-};
-
-// INIT FIREBASE
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ---------------- DATA ----------------
-let players = [
+let players = JSON.parse(localStorage.getItem('mg_players')) || [
 {name:"Charlie Juliana", points:0, img:"charlieminigolf.png"},
 {name:"Caleb Willner", points:0, img:"CalebRabbi.png"},
 {name:"Devin Skinner", points:0, img:"SkinnerProfile.png"},
@@ -31,83 +8,107 @@ let players = [
 {name:"Ryan Wright", points:0, img:"BigBoyRyan.png"}
 ];
 
-let tournaments = [];
+let tournaments = JSON.parse(localStorage.getItem('mg_tournaments')) || [];
 
-function login(){
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+let lastRankings = JSON.parse(localStorage.getItem('mg_last_rankings')) || {};
 
-  signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      alert("Logged in!");
-      document.getElementById("adminPanel").style.display = "block";
-    })
-    .catch(() => {
-      alert("Login failed");
-    });
-}
-
-// ---------------- SAVE TO FIREBASE ----------------
+/* ---------------- SAVE ---------------- */
 function saveData(){
-  set(ref(db, 'tourData'), {
-    players: players,
-    tournaments: tournaments
+  localStorage.setItem('mg_players', JSON.stringify(players));
+  localStorage.setItem('mg_tournaments', JSON.stringify(tournaments));
+}
+
+/* ---------------- SAVE RANK SNAPSHOT ---------------- */
+function saveRankSnapshot(sortedPlayers){
+  let snapshot = {};
+
+  sortedPlayers.forEach((p, i) => {
+    snapshot[p.name] = i + 1;
   });
+
+  localStorage.setItem('mg_last_rankings', JSON.stringify(snapshot));
 }
 
-// ---------------- LOAD FROM FIREBASE ----------------
-async function loadData(){
-  const snapshot = await get(ref(db, 'tourData'));
-
-  if(snapshot.exists()){
-    const data = snapshot.val();
-    players = data.players || players;
-    tournaments = data.tournaments || [];
-  }
-}
-
-// ---------------- LEADERBOARD ----------------
+/* ---------------- LEADERBOARD ---------------- */
 function renderLeaderboard(){
   const div = document.getElementById("leaderboardList");
   if(!div) return;
 
   const sorted = [...players].sort((a,b)=>b.points-a.points);
 
+  let currentRanks = {};
+
+  sorted.forEach((p,i)=>{
+    currentRanks[p.name] = i + 1;
+  });
+
+  const prev = JSON.parse(localStorage.getItem('mg_last_rankings')) || {};
+
   div.innerHTML = "";
 
   sorted.forEach((p,i)=>{
+
     const isLeader = i === 0;
+
+    let movement = "";
+    if(prev[p.name]){
+      if(prev[p.name] > currentRanks[p.name]){
+        movement = "⬆";
+      } else if(prev[p.name] < currentRanks[p.name]){
+        movement = "⬇";
+      } else {
+        movement = "→";
+      }
+    } else {
+      movement = "🆕";
+    }
 
     div.innerHTML += `
       <div class="card player" style="
-        display:flex;
         align-items:center;
         justify-content:space-between;
-        border:${isLeader ? "2px solid gold" : "1px solid #14532d"};
+        border: ${isLeader ? "2px solid gold" : "1px solid #1f2937"};
+        background: ${isLeader ? "rgba(234,179,8,0.10)" : "rgba(5, 46, 22, 0.85)"};
+        box-shadow: ${isLeader ? "0 0 18px rgba(234,179,8,0.35)" : "none"};
       ">
 
-        <div style="display:flex;align-items:center;gap:10px;">
-          <img src="${p.img}" style="width:50px;height:50px;border-radius:50%;">
-          <strong>#${i+1} ${p.name} ${isLeader ? "🏆" : ""}</strong>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="${p.img}" style="
+            border: ${isLeader ? "2px solid gold" : "2px solid #22c55e"};
+          ">
+
+          <div>
+            <div style="font-size:16px; font-weight:bold;">
+              #${i+1} ${p.name} ${isLeader ? "🏆" : ""} 
+              <span style="margin-left:8px;">${movement}</span>
+            </div>
+          </div>
         </div>
 
         <div style="
           font-size:26px;
-          font-weight:bold;
-          background:${isLeader ? "gold" : "#22c55e"};
-          padding:8px 14px;
-          border-radius:10px;
+          font-weight:900;
+          background: ${isLeader 
+            ? "linear-gradient(135deg,gold,#fbbf24)" 
+            : "linear-gradient(135deg,#22c55e,#16a34a)"};
           color:black;
+          padding:10px 16px;
+          border-radius:12px;
+          min-width:90px;
+          text-align:center;
+          box-shadow:0 0 10px rgba(34,197,94,0.4);
         ">
-          ${p.points}
+          ${p.points} pts
         </div>
 
       </div>
     `;
   });
+
+  saveRankSnapshot(sorted);
 }
 
-// ---------------- PLAYERS ----------------
+/* ---------------- PLAYERS ---------------- */
 function renderPlayers(){
   const div = document.getElementById("playersList");
   if(!div) return;
@@ -123,7 +124,7 @@ function renderPlayers(){
   });
 }
 
-// ---------------- TOURNAMENTS ----------------
+/* ---------------- TOURNAMENTS ---------------- */
 function renderTournaments(){
   const div = document.getElementById("tournamentList");
   if(!div) return;
@@ -135,47 +136,100 @@ function renderTournaments(){
         <h3>${t.name}</h3>
         <p>${t.date} | ${t.location}</p>
         <a href="tournament.html?id=${i}">
-          <button>View</button>
+          <button>View Leaderboard</button>
         </a>
       </div>
     `;
   });
 }
 
-// ---------------- ADD TOURNAMENT ----------------
+/* ---------------- TOURNAMENT PAGE ---------------- */
+function loadTournamentPage(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if(id === null) return;
+
+  const t = tournaments[id];
+
+  document.getElementById("detailTitle").innerText = t.name;
+  document.getElementById("detailInfo").innerText =
+    `${t.date} | ${t.location} | ${t.holes} holes`;
+
+  const table = document.getElementById("detailTable");
+  table.innerHTML = "";
+
+  t.results.forEach(r=>{
+    table.innerHTML += `
+      <tr>
+        <td>${r.place}</td>
+        <td>${r.name}</td>
+        <td>${r.score}</td>
+      </tr>
+    `;
+  });
+}
+
+/* ---------------- ADMIN ---------------- */
+function unlock(){
+  if(document.getElementById("password").value === "TheTour2026"){
+    document.getElementById("adminPanel").style.display = "block";
+    initScores();
+  }
+}
+
+function initScores(){
+  const div = document.getElementById("scores");
+  div.innerHTML = "";
+  players.forEach(p=>{
+    div.innerHTML += `
+      ${p.name}: <input type="number" id="score-${p.name}">
+      <br>
+    `;
+  });
+}
+
+/* ---------------- ADD TOURNAMENT ---------------- */
 function addTournament(){
   let results = [];
 
+  // collect scores (only players who played)
   players.forEach(p=>{
     let val = document.getElementById(`score-${p.name}`).value;
     if(val !== "") results.push({name:p.name, score:parseInt(val)});
   });
 
+  // sort by score (lower is better)
   results.sort((a,b)=>a.score-b.score);
 
   let places = [];
   let place = 1;
 
+  // assign places WITH ties
   for(let i=0;i<results.length;i++){
     if(i>0 && results[i].score === results[i-1].score){
-      places[i] = places[i-1];
+      places[i] = places[i-1]; // same place for tie
     } else {
       places[i] = place;
     }
     place++;
   }
 
+  // TOTAL PLAYERS WHO PLAYED
   let totalPlayers = results.length;
 
+  // dynamic scoring function
   function getPoints(place){
     return totalPlayers - place + 1;
   }
 
+  // assign points
   results.forEach((r,i)=>{
+    let pts = getPoints(places[i]);
     let player = players.find(x=>x.name===r.name);
-    player.points += getPoints(places[i]);
+    player.points += pts;
   });
 
+  // save tournament
   tournaments.push({
     name: document.getElementById("name").value,
     date: document.getElementById("date").value,
@@ -188,11 +242,59 @@ function addTournament(){
   alert("Tournament Added");
 }
 
-// ---------------- INIT ----------------
-window.onload = async () => {
-  await loadData();
+function resetLeaderboard(){
+  let confirmReset = confirm("Are you sure you want to reset all leaderboard points?");
+  
+  if(!confirmReset) return;
 
+  // reset all player points
+  players.forEach(p => p.points = 0);
+
+  // clear ranking history (movement arrows)
+  localStorage.removeItem('mg_last_rankings');
+
+  saveData();
+
+  alert("Leaderboard has been reset.");
+
+  // refresh leaderboard if on page
   renderLeaderboard();
-  renderPlayers();
+}
+
+function undoLastTournament(){
+  if(tournaments.length === 0){
+    alert("No tournaments to undo.");
+    return;
+  }
+
+  let confirmUndo = confirm("Undo the last tournament?");
+  if(!confirmUndo) return;
+
+  // get last tournament
+  let last = tournaments[tournaments.length - 1];
+
+  // subtract points that were awarded
+  last.results.forEach(r => {
+    let player = players.find(p => p.name === r.name);
+
+    // same scoring logic used before
+    let totalPlayers = last.results.length;
+    let pts = totalPlayers - r.place + 1;
+
+    player.points -= pts;
+  });
+
+  // remove tournament
+  tournaments.pop();
+
+  // reset movement tracking so arrows don’t bug out
+  localStorage.removeItem('mg_last_rankings');
+
+  saveData();
+
+  alert("Last tournament undone.");
+
+  // refresh UI if needed
+  renderLeaderboard();
   renderTournaments();
-};
+}
