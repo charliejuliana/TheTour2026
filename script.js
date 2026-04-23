@@ -157,7 +157,7 @@ function loadTournamentPage() {
   const id = params.get("id");
   if (id === null) return;
 
-  const t = tournaments[id];
+  const t = tournaments[Number(id)];
   if (!t) return;
 
   const title = document.getElementById("detailTitle");
@@ -167,16 +167,33 @@ function loadTournamentPage() {
   if (!title || !info || !table) return;
 
   title.innerText = t.name;
-  info.innerText = `${t.date} | ${t.location} | ${t.holes} holes`;
+  info.innerText = `${formatDate(t.date)} | ${t.location} | ${t.holes} holes`;
 
   table.innerHTML = "";
 
-  t.results.forEach(r => {
+  const sortedResults = [...t.results].sort((a, b) => {
+    if (a.place !== b.place) return a.place - b.place;
+    return a.score - b.score;
+  });
+
+  sortedResults.forEach(r => {
+    const totalPlayers = sortedResults.length;
+    const pts = getPointsForPlace(r.place, totalPlayers);
+    const tied = sortedResults.filter(x => x.place === r.place).length > 1;
+    const placeLabel = tied ? `T${r.place}` : `${r.place}`;
+
+    const playerObj = players.find(p => p.name === r.name);
+    const img = playerObj ? playerObj.img : "";
+
     table.innerHTML += `
       <tr>
-        <td>${r.place}</td>
-        <td>${r.name}</td>
+        <td>${placeLabel}</td>
+        <td style="display:flex;align-items:center;gap:10px;">
+          <img src="${img}" alt="${r.name}" style="width:36px;height:36px;border-radius:50%;">
+          <span>${r.name}</span>
+        </td>
         <td>${r.score}</td>
+        <td>${pts}</td>
       </tr>
     `;
   });
