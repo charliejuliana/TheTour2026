@@ -64,20 +64,15 @@ async function loadFromSheet() {
 
   // rebuild leaderboard points from tournament results
   tournaments.forEach(tournament => {
-  tournament.results.sort((a, b) => {
-    if (a.place !== b.place) return a.place - b.place;
-    return a.score - b.score;
-  });
+    const totalPlayers = tournament.results.length;
 
-  const totalPlayers = tournament.results.length;
-
-  tournament.results.forEach(result => {
-    const player = players.find(p => p.name === result.name);
-    if (player) {
-      player.points += getPointsForPlace(result.place, totalPlayers);
-    }
+    tournament.results.forEach(result => {
+      const p = players.find(player => player.name === result.name);
+      if (p) {
+        p.points += totalPlayers - result.place + 1;
+      }
+    });
   });
-});
 }
 
 // ---------------- LEADERBOARD ----------------
@@ -162,7 +157,7 @@ function loadTournamentPage() {
   const id = params.get("id");
   if (id === null) return;
 
-  const t = tournaments[Number(id)];
+  const t = tournaments[id];
   if (!t) return;
 
   const title = document.getElementById("detailTitle");
@@ -172,33 +167,16 @@ function loadTournamentPage() {
   if (!title || !info || !table) return;
 
   title.innerText = t.name;
-  info.innerText = `${formatDate(t.date)} | ${t.location} | ${t.holes} holes`;
+  info.innerText = `${t.date} | ${t.location} | ${t.holes} holes`;
 
   table.innerHTML = "";
 
-  const sortedResults = [...t.results].sort((a, b) => {
-    if (a.place !== b.place) return a.place - b.place;
-    return a.score - b.score;
-  });
-
-  sortedResults.forEach(r => {
-    const totalPlayers = sortedResults.length;
-    const pts = getPointsForPlace(r.place, totalPlayers);
-    const tied = sortedResults.filter(x => x.place === r.place).length > 1;
-    const placeLabel = tied ? `T${r.place}` : `${r.place}`;
-
-    const playerObj = players.find(p => p.name === r.name);
-    const img = playerObj ? playerObj.img : "";
-
+  t.results.forEach(r => {
     table.innerHTML += `
       <tr>
-        <td>${placeLabel}</td>
-        <td style="display:flex;align-items:center;gap:10px;">
-          <img src="${img}" alt="${r.name}" style="width:36px;height:36px;border-radius:50%;">
-          <span>${r.name}</span>
-        </td>
+        <td>${r.place}</td>
+        <td>${r.name}</td>
         <td>${r.score}</td>
-        <td>${pts}</td>
       </tr>
     `;
   });
@@ -256,8 +234,8 @@ async function addTournament() {
       }
     });
 
-    if (results.length < 4) {
-      alert("Enter at least four scores.");
+    if (results.length === 0) {
+      alert("Enter at least one score.");
       return;
     }
 
@@ -292,12 +270,13 @@ async function addTournament() {
       });
     }
 
-    alert("Tournament submitted successfully!");
+    alert("Tournament Added!");
 
-// optional: small delay so user sees alert clearly
-setTimeout(() => {
-  window.location.href = "tournaments.html"; 
-}, 300);
+    await loadFromSheet();
+    renderLeaderboard();
+    renderPlayers();
+    renderTournaments();
+    loadTournamentPage();
   } catch (error) {
     console.error("Error adding tournament:", error);
     alert("There was an error adding the tournament. Check the console.");
