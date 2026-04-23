@@ -487,7 +487,7 @@ setTimeout(() => {
 }
 
 // ---------------- PAGE INIT ----------------
-ocument.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async () => {
   resetPlayersToBase();
 
   renderLeaderboard();
