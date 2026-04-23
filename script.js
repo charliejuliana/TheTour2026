@@ -35,7 +35,7 @@ function formatDate(dateValue) {
   const d = new Date(dateValue);
   if (isNaN(d)) return dateValue;
 
-  return d.toISOString().split("T")[0];
+  return new Date(dateValue).toLocaleDateString();
 }
 
 // ---------------- LOAD FROM GOOGLE SHEETS ----------------
@@ -182,7 +182,7 @@ function loadTournamentPage() {
   if (!title || !info || !table) return;
 
   title.innerText = t.name;
-  info.innerText = `${t.date} | ${t.location} | ${t.holes} holes`;
+  info.innerText = `${formatDate(t.date)} | ${t.location} | ${t.holes} holes`;
 
   table.innerHTML = "";
 
