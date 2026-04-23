@@ -26,14 +26,14 @@ function safeId(name) {
 function formatDate(dateValue) {
   if (!dateValue) return "";
 
+  if (typeof dateValue === "string" && dateValue.includes("T")) {
+    return dateValue.split("T")[0];
+  }
+
   const d = new Date(dateValue);
   if (isNaN(d)) return dateValue;
 
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  });
+  return d.toISOString().split("T")[0];
 }
 // ---------------- LOAD FROM GOOGLE SHEETS ----------------
 async function loadFromSheet() {
