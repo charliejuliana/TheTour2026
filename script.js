@@ -180,18 +180,23 @@ async function addTournament(){
   for(let i=0;i<results.length;i++){
     let r = results[i];
 
-    await fetch(SHEET_API, {
-      method: "POST",
-      body: JSON.stringify({
-        name: document.getElementById("name").value,
-        date: document.getElementById("date").value,
-        location: document.getElementById("location").value,
-        holes: document.getElementById("holes").value,
-        player: r.name,
-        score: r.score,
-        place: places[i]
-      })
-    });
+    try {
+      await fetch(SHEET_API, {
+        method: "POST",
+        body: JSON.stringify({
+          name: document.getElementById("name").value,
+          date: document.getElementById("date").value,
+          location: document.getElementById("location").value,
+          holes: document.getElementById("holes").value,
+          player: r.name,
+          score: r.score,
+          place: places[i]
+        })
+      });
+    } catch (err) {
+      console.error("POST ERROR:", err);
+      alert("Error sending to Google Sheets");
+    }
   }
 
   alert("Tournament Added!");
