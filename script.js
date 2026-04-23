@@ -157,7 +157,7 @@ function renderTournaments() {
     div.innerHTML += `
       <div class="card">
         <h3>${t.name}</h3>
-        <p>${t.date} | ${t.location}</p>
+        <p>${formatDate(t.date)} | ${t.location}</p>
         <a href="tournament.html?id=${i}">
           <button>View Leaderboard</button>
         </a>
