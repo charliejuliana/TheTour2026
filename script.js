@@ -15,50 +15,61 @@ let tournaments = [];
 
 // ---------------- LOAD FROM GOOGLE SHEETS ----------------
 async function loadFromSheet(){
-  const res = await fetch(SHEET_API);
-  const data = await res.json();
+  try {
+    const res = await fetch(SHEET_API);
+    const text = await res.text();
 
-  if(data.length <= 1) return;
-
-  tournaments = [];
-  players.forEach(p => p.points = 0);
-
-  let rows = data.slice(1);
-  let grouped = {};
-
-  rows.forEach(r => {
-    const [name, date, location, holes, player, score, place] = r;
-
-    if(!grouped[name]){
-      grouped[name] = {
-        name,
-        date,
-        location,
-        holes,
-        results: []
-      };
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error("Google Sheets did not return valid JSON:", text);
+      return;
     }
 
-    grouped[name].results.push({
-      name: player,
-      score: parseInt(score),
-      place: parseInt(place)
-    });
-  });
+    if (!Array.isArray(data) || data.length <= 1) return;
 
-  tournaments = Object.values(grouped);
+    tournaments = [];
+    players.forEach(p => p.points = 0);
 
-  // rebuild leaderboard
-  tournaments.forEach(t => {
-    let totalPlayers = t.results.length;
+    const rows = data.slice(1);
+    const grouped = {};
 
-    t.results.forEach(r => {
-      let p = players.find(x => x.name === r.name);
-      if(p){
-        p.points += (totalPlayers - r.place + 1);
+    rows.forEach(r => {
+      const [name, date, location, holes, player, score, place] = r;
+
+      if (!grouped[name]) {
+        grouped[name] = {
+          name,
+          date,
+          location,
+          holes,
+          results: []
+        };
       }
+
+      grouped[name].results.push({
+        name: player,
+        score: parseInt(score, 10),
+        place: parseInt(place, 10)
+      });
     });
-  });
+
+    tournaments = Object.values(grouped);
+
+    tournaments.forEach(t => {
+      const totalPlayers = t.results.length;
+
+      t.results.forEach(r => {
+        const p = players.find(x => x.name === r.name);
+        if (p) {
+          p.points += (totalPlayers - r.place + 1);
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Error loading from Google Sheets:", error);
+  }
 }
 
 // ---------------- LEADERBOARD ----------------
