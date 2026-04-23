@@ -64,15 +64,20 @@ async function loadFromSheet() {
 
   // rebuild leaderboard points from tournament results
   tournaments.forEach(tournament => {
-    const totalPlayers = tournament.results.length;
-
-    tournament.results.forEach(result => {
-      const p = players.find(player => player.name === result.name);
-      if (p) {
-        p.points += totalPlayers - result.place + 1;
-      }
-    });
+  tournament.results.sort((a, b) => {
+    if (a.place !== b.place) return a.place - b.place;
+    return a.score - b.score;
   });
+
+  const totalPlayers = tournament.results.length;
+
+  tournament.results.forEach(result => {
+    const player = players.find(p => p.name === result.name);
+    if (player) {
+      player.points += getPointsForPlace(result.place, totalPlayers);
+    }
+  });
+});
 }
 
 // ---------------- LEADERBOARD ----------------
