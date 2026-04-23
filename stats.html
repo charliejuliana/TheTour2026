@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stats - The Tour 2026</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body onload="renderTournaments()">
-<!-- HEADER (consistent across all pages) -->
+<body>
   <header>
     <h2>Mini Golf Tour</h2>
     <nav>
@@ -17,13 +19,15 @@
     </nav>
   </header>
 
-  <!-- PAGE CONTENT -->
   <div class="card">
-    <h1>Stats</h1>
+    <h1>Player Stats</h1>
+    <p>Overall score, best tournament, and worst tournament for each player.</p>
   </div>
 
-<div id="tournamentList"></div>
+  <div id="statsTabs" class="card" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
 
-<script src="script.js"></script>
+  <div id="statsContent"></div>
+
+  <script src="script.js"></script>
 </body>
 </html>
