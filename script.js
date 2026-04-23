@@ -270,13 +270,12 @@ async function addTournament() {
       });
     }
 
-    alert("Tournament Added!");
+    alert("Tournament submitted successfully!");
 
-    await loadFromSheet();
-    renderLeaderboard();
-    renderPlayers();
-    renderTournaments();
-    loadTournamentPage();
+// optional: small delay so user sees alert clearly
+setTimeout(() => {
+  window.location.href = "tournaments.html"; 
+}, 300);
   } catch (error) {
     console.error("Error adding tournament:", error);
     alert("There was an error adding the tournament. Check the console.");
