@@ -1,4 +1,4 @@
-const SHEET_API = "https://script.google.com/macros/s/AKfycbzAa-45b0V-rRjjhCSR-Y9PXYlUpU8tNxpKTtbk4kEqonAb20lXbNRko_Trc1yyeSku/exec";
+const SHEET_API = "https://script.google.com/macros/s/AKfycbzc8XqMklln8ty5jpd6zkb9AwKwjlGeKgOTqLU1Cziyozfwt9mtUriwMiTjS5Bwsf92/exec";
 
 // ---------------- PLAYERS ----------------
 let players = [
