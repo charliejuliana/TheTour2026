@@ -13,6 +13,7 @@ const basePlayers = [
 
 let players = basePlayers.map(p => ({ ...p }));
 let tournaments = [];
+let selectedStatsPlayer = null;
 
 // ---------------- HELPERS ----------------
 function resetPlayersToBase() {
@@ -35,6 +36,197 @@ function formatDate(dateValue) {
 
   return d.toISOString().split("T")[0];
 }
+
+function compareTournamentPerformance(a, b) {
+  if (a.score !== b.score) return a.score - b.score;
+  return a.place - b.place;
+}
+
+function getPlayerStats(playerName) {
+  const playerTournaments = [];
+
+  tournaments.forEach(tournament => {
+    const result = tournament.results.find(r => r.name === playerName);
+    if (result) {
+      const totalPlayers = tournament.results.length;
+      playerTournaments.push({
+        tournamentName: tournament.name,
+        date: tournament.date,
+        location: tournament.location,
+        holes: tournament.holes,
+        score: result.score,
+        place: result.place,
+        points: getPointsForPlace(result.place, totalPlayers)
+      });
+    }
+  });
+
+  const overallScore = playerTournaments.reduce((sum, t) => sum + t.score, 0);
+
+  let bestTournament = null;
+  let worstTournament = null;
+
+  if (playerTournaments.length > 0) {
+    bestTournament = [...playerTournaments].sort(compareTournamentPerformance)[0];
+    worstTournament = [...playerTournaments].sort(compareTournamentPerformance).reverse()[0];
+  }
+
+  return {
+    overallScore,
+    tournamentsPlayed: playerTournaments.length,
+    bestTournament,
+    worstTournament,
+    tournaments: playerTournaments
+  };
+}
+
+function renderStatsTabs() {
+  const tabsDiv = document.getElementById("statsTabs");
+  if (!tabsDiv) return;
+
+  if (!selectedStatsPlayer && players.length > 0) {
+    selectedStatsPlayer = players[0].name;
+  }
+
+  tabsDiv.innerHTML = "";
+
+  players.forEach(player => {
+    const isSelected = player.name === selectedStatsPlayer;
+
+    tabsDiv.innerHTML += `
+      <button
+        onclick="selectStatsPlayer('${player.name.replace(/'/g, "\\'")}')"
+        style="
+          background:${isSelected ? 'gold' : '#22c55e'};
+          color:black;
+          font-weight:bold;
+        "
+      >
+        ${player.name}
+      </button>
+    `;
+  });
+}
+
+function renderStatsContent() {
+  const contentDiv = document.getElementById("statsContent");
+  if (!contentDiv || !selectedStatsPlayer) return;
+
+  const playerObj = players.find(p => p.name === selectedStatsPlayer);
+  const stats = getPlayerStats(selectedStatsPlayer);
+
+  const bestHtml = stats.bestTournament
+    ? `
+      <div class="card">
+        <h3>Best Tournament</h3>
+        <p><strong>${stats.bestTournament.tournamentName}</strong></p>
+        <p>${formatDate(stats.bestTournament.date)} | ${stats.bestTournament.location}</p>
+        <p>Score: ${stats.bestTournament.score}</p>
+        <p>Place: ${stats.bestTournament.place}</p>
+        <p>Points Earned: ${stats.bestTournament.points}</p>
+      </div>
+    `
+    : `
+      <div class="card">
+        <h3>Best Tournament</h3>
+        <p>No tournaments yet.</p>
+      </div>
+    `;
+
+  const worstHtml = stats.worstTournament
+    ? `
+      <div class="card">
+        <h3>Worst Tournament</h3>
+        <p><strong>${stats.worstTournament.tournamentName}</strong></p>
+        <p>${formatDate(stats.worstTournament.date)} | ${stats.worstTournament.location}</p>
+        <p>Score: ${stats.worstTournament.score}</p>
+        <p>Place: ${stats.worstTournament.place}</p>
+        <p>Points Earned: ${stats.worstTournament.points}</p>
+      </div>
+    `
+    : `
+      <div class="card">
+        <h3>Worst Tournament</h3>
+        <p>No tournaments yet.</p>
+      </div>
+    `;
+
+  let tournamentHistoryRows = "";
+  if (stats.tournaments.length > 0) {
+    const sortedHistory = [...stats.tournaments].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    sortedHistory.forEach(t => {
+      tournamentHistoryRows += `
+        <tr>
+          <td>${t.tournamentName}</td>
+          <td>${formatDate(t.date)}</td>
+          <td>${t.score}</td>
+          <td>${t.place}</td>
+          <td>${t.points}</td>
+        </tr>
+      `;
+    });
+  } else {
+    tournamentHistoryRows = `
+      <tr>
+        <td colspan="5">No tournaments played yet.</td>
+      </tr>
+    `;
+  }
+
+  contentDiv.innerHTML = `
+    <div class="card player" style="gap:15px;">
+      <img src="${playerObj ? playerObj.img : ''}" alt="${selectedStatsPlayer}" style="width:70px;height:70px;border-radius:50%;">
+      <div>
+        <h2 style="margin:0;">${selectedStatsPlayer}</h2>
+        <p style="margin:6px 0 0 0;">Tournaments Played: ${stats.tournamentsPlayed}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Overall Score</h3>
+      <p style="font-size:28px;font-weight:bold;margin:0;">${stats.overallScore}</p>
+    </div>
+
+    ${bestHtml}
+    ${worstHtml}
+
+    <div class="card">
+      <h3>Tournament History</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Tournament</th>
+            <th>Date</th>
+            <th>Score</th>
+            <th>Place</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tournamentHistoryRows}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderStatsPage() {
+  const tabsDiv = document.getElementById("statsTabs");
+  const contentDiv = document.getElementById("statsContent");
+  if (!tabsDiv || !contentDiv) return;
+
+  renderStatsTabs();
+  renderStatsContent();
+}
+
+function selectStatsPlayer(playerName) {
+  selectedStatsPlayer = playerName;
+  renderStatsPage();
+}
+
+window.selectStatsPlayer = selectStatsPlayer;
+
 // ---------------- LOAD FROM GOOGLE SHEETS ----------------
 async function loadFromSheet() {
   const res = await fetch(SHEET_API);
@@ -179,7 +371,7 @@ function loadTournamentPage() {
   if (!title || !info || !table) return;
 
   title.innerText = t.name;
-  info.innerText = `${formatDate(t.date)} | ${t.location} | ${t.holes} holes`;
+  info.innerText = `${formatDate(t.date)} | ${t.location} | ${t.holes} Holes`;
 
   table.innerHTML = "";
 
@@ -295,22 +487,23 @@ setTimeout(() => {
 }
 
 // ---------------- PAGE INIT ----------------
-document.addEventListener("DOMContentLoaded", () => {
-  // Render frontend immediately so the site never appears blank
+ocument.addEventListener("DOMContentLoaded", async () => {
+  resetPlayersToBase();
+
   renderLeaderboard();
   renderPlayers();
   renderTournaments();
-  loadTournamentPage();
+  renderStatsPage();
 
-  // Then try to sync from Sheets
-  loadFromSheet()
-    .then(() => {
-      renderLeaderboard();
-      renderPlayers();
-      renderTournaments();
-      loadTournamentPage();
-    })
-    .catch(error => {
-      console.error("Sheet sync failed:", error);
-    });
+  try {
+    await loadFromSheet();
+  } catch (error) {
+    console.error("Sheet sync failed:", error);
+  }
+
+  renderLeaderboard();
+  renderPlayers();
+  renderTournaments();
+  renderStatsPage();
+  loadTournamentPage();
 });
