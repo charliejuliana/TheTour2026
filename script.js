@@ -35,7 +35,7 @@ function formatDate(dateValue) {
   const d = new Date(dateValue);
   if (isNaN(d)) return dateValue;
 
-  return new Date(dateValue).toLocaleDateString();
+  return d.toISOString().split("T")[0];
 }
 
 // ---------------- LOAD FROM GOOGLE SHEETS ----------------
