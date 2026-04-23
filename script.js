@@ -23,6 +23,19 @@ function safeId(name) {
   return name.replace(/\s+/g, "_");
 }
 
+function formatDate(dateValue) {
+  if (!dateValue) return "";
+
+  const d = new Date(dateValue);
+  if (isNaN(d)) return dateValue;
+
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
 // ---------------- LOAD FROM GOOGLE SHEETS ----------------
 async function loadFromSheet() {
   const res = await fetch(SHEET_API);
