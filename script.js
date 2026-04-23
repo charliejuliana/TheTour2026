@@ -256,8 +256,8 @@ async function addTournament() {
       }
     });
 
-    if (results.length === 0) {
-      alert("Enter at least one score.");
+    if (results.length < 4) {
+      alert("Enter at least four scores.");
       return;
     }
 
