@@ -1,7 +1,7 @@
 const SHEET_API = "https://script.google.com/macros/s/AKfycbzc8XqMklln8ty5jpd6zkb9AwKwjlGeKgOTqLU1Cziyozfwt9mtUriwMiTjS5Bwsf92/exec";
 
-// ---------------- PLAYERS ----------------
-let players = [
+// ---------------- BASE DATA ----------------
+const basePlayers = [
   { name: "Charlie Juliana", points: 0, img: "charlieminigolf.png" },
   { name: "Caleb Willner", points: 0, img: "CalebRabbi.png" },
   { name: "Devin Skinner", points: 0, img: "SkinnerProfile.png" },
@@ -11,68 +11,68 @@ let players = [
   { name: "Ryan Wright", points: 0, img: "BigBoyRyan.png" }
 ];
 
+let players = basePlayers.map(p => ({ ...p }));
 let tournaments = [];
+
+// ---------------- HELPERS ----------------
+function resetPlayersToBase() {
+  players = basePlayers.map(p => ({ ...p }));
+}
+
+function safeId(name) {
+  return name.replace(/\s+/g, "_");
+}
 
 // ---------------- LOAD FROM GOOGLE SHEETS ----------------
 async function loadFromSheet() {
-  try {
-    const res = await fetch(SHEET_API);
-    const data = await res.json();
+  const res = await fetch(SHEET_API);
+  const data = await res.json();
 
-    console.log("Sheet data:", data);
+  if (!Array.isArray(data) || data.length <= 1) {
+    tournaments = [];
+    resetPlayersToBase();
+    return;
+  }
 
-    if (!Array.isArray(data) || data.length <= 1) {
-      console.log("No tournament rows found yet.");
-      return;
+  tournaments = [];
+  resetPlayersToBase();
+
+  const rows = data.slice(1);
+  const grouped = {};
+
+  rows.forEach(row => {
+    const [name, date, location, holes, player, score, place] = row;
+
+    if (!grouped[name]) {
+      grouped[name] = {
+        name,
+        date,
+        location,
+        holes,
+        results: []
+      };
     }
 
-    tournaments = [];
-    players.forEach(p => {
-      p.points = 0;
+    grouped[name].results.push({
+      name: player,
+      score: Number(score),
+      place: Number(place)
     });
+  });
 
-    const rows = data.slice(1);
-    const grouped = {};
+  tournaments = Object.values(grouped);
 
-    rows.forEach(row => {
-      const [name, date, location, holes, player, score, place] = row;
+  // rebuild leaderboard points from tournament results
+  tournaments.forEach(tournament => {
+    const totalPlayers = tournament.results.length;
 
-      if (!grouped[name]) {
-        grouped[name] = {
-          name,
-          date,
-          location,
-          holes,
-          results: []
-        };
+    tournament.results.forEach(result => {
+      const p = players.find(player => player.name === result.name);
+      if (p) {
+        p.points += totalPlayers - result.place + 1;
       }
-
-      grouped[name].results.push({
-        name: player,
-        score: Number(score),
-        place: Number(place)
-      });
     });
-
-    tournaments = Object.values(grouped);
-
-    // Rebuild leaderboard points from tournament results
-    tournaments.forEach(tournament => {
-      const totalPlayers = tournament.results.length;
-
-      tournament.results.forEach(result => {
-        const player = players.find(p => p.name === result.name);
-        if (player) {
-          player.points += totalPlayers - result.place + 1;
-        }
-      });
-    });
-
-    console.log("Players after rebuild:", players);
-    console.log("Tournaments after rebuild:", tournaments);
-  } catch (error) {
-    console.error("Error loading from Google Sheets:", error);
-  }
+  });
 }
 
 // ---------------- LEADERBOARD ----------------
@@ -204,9 +204,8 @@ function initScores() {
   div.innerHTML = "";
 
   players.forEach(p => {
-    const safeId = p.name.replace(/\s+/g, "_");
     div.innerHTML += `
-      ${p.name}: <input type="number" id="score-${safeId}">
+      ${p.name}: <input type="number" id="score-${safeId(p.name)}">
       <br>
     `;
   });
@@ -223,8 +222,7 @@ async function addTournament() {
     let results = [];
 
     players.forEach(p => {
-      const safeId = p.name.replace(/\s+/g, "_");
-      const input = document.getElementById(`score-${safeId}`);
+      const input = document.getElementById(`score-${safeId(p.name)}`);
       if (!input) return;
 
       const val = input.value;
@@ -278,6 +276,7 @@ async function addTournament() {
     renderLeaderboard();
     renderPlayers();
     renderTournaments();
+    loadTournamentPage();
   } catch (error) {
     console.error("Error adding tournament:", error);
     alert("There was an error adding the tournament. Check the console.");
@@ -285,13 +284,22 @@ async function addTournament() {
 }
 
 // ---------------- PAGE INIT ----------------
-document.addEventListener("DOMContentLoaded", async () => {
-  console.log("script loaded");
-
-  await loadFromSheet();
-
+document.addEventListener("DOMContentLoaded", () => {
+  // Render frontend immediately so the site never appears blank
   renderLeaderboard();
   renderPlayers();
   renderTournaments();
   loadTournamentPage();
+
+  // Then try to sync from Sheets
+  loadFromSheet()
+    .then(() => {
+      renderLeaderboard();
+      renderPlayers();
+      renderTournaments();
+      loadTournamentPage();
+    })
+    .catch(error => {
+      console.error("Sheet sync failed:", error);
+    });
 });
