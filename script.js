@@ -26,14 +26,16 @@ function safeId(name) {
 function formatDate(dateValue) {
   if (!dateValue) return "";
 
+  // If it's already a string like "2026-04-19T04:00:00.000Z"
+  if (typeof dateValue === "string" && dateValue.includes("T")) {
+    return dateValue.split("T")[0]; // keeps only YYYY-MM-DD
+  }
+
+  // fallback (if it's a real Date object)
   const d = new Date(dateValue);
   if (isNaN(d)) return dateValue;
 
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric"
-  });
+  return new Date(dateValue).toLocaleDateString();
 }
 
 // ---------------- LOAD FROM GOOGLE SHEETS ----------------
