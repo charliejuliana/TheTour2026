@@ -112,7 +112,7 @@ function renderLeaderboard() {
           border-radius:10px;
           color:black;
         ">
-          ${p.points}
+          ${p.points} pts
         </div>
       </div>
     `;
