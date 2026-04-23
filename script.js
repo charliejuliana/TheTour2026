@@ -17,17 +17,11 @@ let tournaments = [];
 async function loadFromSheet(){
   try {
     const res = await fetch(SHEET_API);
-    const text = await res.text();
+    const data = await res.json();
 
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      console.error("Google Sheets did not return valid JSON:", text);
-      return;
-    }
+    console.log("sheet data:", data);
 
-    if (!Array.isArray(data) || data.length <= 1) return;
+    if(!Array.isArray(data) || data.length <= 1) return;
 
     tournaments = [];
     players.forEach(p => p.points = 0);
@@ -38,7 +32,7 @@ async function loadFromSheet(){
     rows.forEach(r => {
       const [name, date, location, holes, player, score, place] = r;
 
-      if (!grouped[name]) {
+      if(!grouped[name]){
         grouped[name] = {
           name,
           date,
@@ -62,13 +56,13 @@ async function loadFromSheet(){
 
       t.results.forEach(r => {
         const p = players.find(x => x.name === r.name);
-        if (p) {
+        if(p){
           p.points += (totalPlayers - r.place + 1);
         }
       });
     });
   } catch (error) {
-    console.error("Error loading from Google Sheets:", error);
+    console.error("Error loading from sheet:", error);
   }
 }
 
@@ -219,7 +213,10 @@ async function addTournament(){
 
 // ---------------- INIT ----------------
 window.onload = async () => {
+  console.log("page loaded");
   await loadFromSheet();
+  console.log("players after load:", players);
+  console.log("tournaments after load:", tournaments);
 
   renderLeaderboard();
   renderPlayers();
